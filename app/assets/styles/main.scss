@@ -1,0 +1,204 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  font-family: 'Inter', 'Roboto', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+// Scrollbar styling
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(108, 99, 255, 0.3);
+  border-radius: 3px;
+
+  &:hover {
+    background: rgba(108, 99, 255, 0.5);
+  }
+}
+
+// Smooth page transitions
+.page-enter-active,
+.page-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.page-enter-from,
+.page-leave-to {
+  opacity: 0;
+}
+
+// Task/Note list animations
+.task-list-move,
+.task-list-enter-active,
+.task-list-leave-active {
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.task-list-enter-from {
+  opacity: 0;
+  transform: translateX(-30px);
+}
+
+.task-list-leave-to {
+  opacity: 0;
+  transform: translateX(30px);
+}
+
+.task-list-leave-active {
+  position: absolute;
+  width: 100%;
+}
+
+// Note list animations
+.note-list-move,
+.note-list-enter-active,
+.note-list-leave-active {
+  transition: all 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.note-list-enter-from {
+  opacity: 0;
+  transform: translateY(-20px) scale(0.97);
+}
+
+.note-list-leave-to {
+  opacity: 0;
+  transform: scale(0.95);
+}
+
+// Card fade-in for stats, project cards
+.card-stagger-enter-active {
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.card-stagger-enter-from {
+  opacity: 0;
+  transform: translateY(16px);
+}
+
+// Checkbox completion ripple
+.task-done-enter-active {
+  animation: taskComplete 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+@keyframes taskComplete {
+  0% { background-color: transparent; }
+  40% { background-color: rgba(76, 175, 80, 0.12); }
+  100% { background-color: transparent; }
+}
+
+// Smooth v-list-item hover
+.v-list-item {
+  transition: background-color 0.2s ease !important;
+}
+
+// Dialog transitions
+.v-dialog {
+  .v-card {
+    animation: dialogSlideIn 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+  }
+}
+
+@keyframes dialogSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+// Stat number counter feel
+.stat-value {
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+// Smooth chip transitions
+.v-chip {
+  transition: all 0.2s ease !important;
+}
+
+// Rich content display (rendered HTML from tiptap)
+.rich-content {
+  line-height: 1.6;
+
+  > * + * {
+    margin-top: 0.4em;
+  }
+
+  h2 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin-top: 0.5em;
+  }
+
+  h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-top: 0.5em;
+  }
+
+  ul, ol {
+    padding-left: 1.5em;
+  }
+
+  li {
+    margin: 0.15em 0;
+  }
+
+  blockquote {
+    border-left: 3px solid rgb(var(--v-theme-primary));
+    padding-left: 0.75em;
+    margin-left: 0;
+    opacity: 0.8;
+    font-style: italic;
+  }
+
+  code {
+    background: rgba(var(--v-theme-surface-variant), 0.5);
+    padding: 0.1em 0.35em;
+    border-radius: 4px;
+    font-size: 0.85em;
+  }
+
+  pre {
+    background: rgba(var(--v-theme-surface-variant), 0.5);
+    padding: 0.6em 0.8em;
+    border-radius: 6px;
+    overflow-x: auto;
+
+    code {
+      background: none;
+      padding: 0;
+    }
+  }
+
+  img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 6px;
+    margin: 0.5em 0;
+  }
+
+  a {
+    color: rgb(var(--v-theme-primary));
+    text-decoration: underline;
+  }
+
+  hr {
+    border: none;
+    border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+    margin: 0.75em 0;
+  }
+}
