@@ -1,110 +1,78 @@
 <template>
   <div class="rich-editor" :class="{ 'rich-editor--focused': isFocused, 'rich-editor--compact': compact }">
     <div v-if="editor && !readonly" class="rich-editor__toolbar">
-      <v-btn-group variant="text" density="compact">
-        <v-btn
-          icon="mdi-format-bold"
-          size="x-small"
-          :color="editor.isActive('bold') ? 'primary' : undefined"
-          @click="editor.chain().focus().toggleBold().run()"
-        />
-        <v-btn
-          icon="mdi-format-italic"
-          size="x-small"
-          :color="editor.isActive('italic') ? 'primary' : undefined"
-          @click="editor.chain().focus().toggleItalic().run()"
-        />
-        <v-btn
-          icon="mdi-format-underline"
-          size="x-small"
-          :color="editor.isActive('underline') ? 'primary' : undefined"
-          @click="editor.chain().focus().toggleUnderline().run()"
-        />
-        <v-btn
-          icon="mdi-format-strikethrough"
-          size="x-small"
-          :color="editor.isActive('strike') ? 'primary' : undefined"
-          @click="editor.chain().focus().toggleStrike().run()"
-        />
-      </v-btn-group>
+      <div class="toolbar-group">
+        <button
+          v-for="btn in textFormatButtons"
+          :key="btn.icon"
+          class="toolbar-btn"
+          :class="{ 'toolbar-btn--active': btn.isActive() }"
+          :title="btn.title"
+          @click="btn.action"
+        >
+          <v-icon size="18">{{ btn.icon }}</v-icon>
+        </button>
+      </div>
 
-      <v-divider vertical class="mx-1" />
+      <div class="toolbar-divider" />
 
-      <v-btn-group variant="text" density="compact">
-        <v-btn
-          icon="mdi-format-list-bulleted"
-          size="x-small"
-          :color="editor.isActive('bulletList') ? 'primary' : undefined"
-          @click="editor.chain().focus().toggleBulletList().run()"
-        />
-        <v-btn
-          icon="mdi-format-list-numbered"
-          size="x-small"
-          :color="editor.isActive('orderedList') ? 'primary' : undefined"
-          @click="editor.chain().focus().toggleOrderedList().run()"
-        />
-        <v-btn
-          icon="mdi-format-quote-close"
-          size="x-small"
-          :color="editor.isActive('blockquote') ? 'primary' : undefined"
-          @click="editor.chain().focus().toggleBlockquote().run()"
-        />
-      </v-btn-group>
+      <div class="toolbar-group">
+        <button
+          v-for="btn in listButtons"
+          :key="btn.icon"
+          class="toolbar-btn"
+          :class="{ 'toolbar-btn--active': btn.isActive() }"
+          :title="btn.title"
+          @click="btn.action"
+        >
+          <v-icon size="18">{{ btn.icon }}</v-icon>
+        </button>
+      </div>
 
-      <v-divider vertical class="mx-1" />
+      <div class="toolbar-divider" />
 
-      <v-btn-group variant="text" density="compact">
-        <v-btn
-          icon="mdi-format-header-1"
-          size="x-small"
-          :color="editor.isActive('heading', { level: 2 }) ? 'primary' : undefined"
-          @click="editor.chain().focus().toggleHeading({ level: 2 }).run()"
-        />
-        <v-btn
-          icon="mdi-format-header-2"
-          size="x-small"
-          :color="editor.isActive('heading', { level: 3 }) ? 'primary' : undefined"
-          @click="editor.chain().focus().toggleHeading({ level: 3 }).run()"
-        />
-      </v-btn-group>
+      <div class="toolbar-group">
+        <button
+          v-for="btn in headingButtons"
+          :key="btn.icon"
+          class="toolbar-btn"
+          :class="{ 'toolbar-btn--active': btn.isActive() }"
+          :title="btn.title"
+          @click="btn.action"
+        >
+          <v-icon size="18">{{ btn.icon }}</v-icon>
+        </button>
+      </div>
 
-      <v-divider vertical class="mx-1" />
+      <div class="toolbar-divider" />
 
-      <v-btn-group variant="text" density="compact">
-        <v-btn
-          icon="mdi-link"
-          size="x-small"
-          :color="editor.isActive('link') ? 'primary' : undefined"
-          @click="setLink"
-        />
-        <v-btn
-          icon="mdi-image-plus"
-          size="x-small"
-          @click="addImage"
-        />
-      </v-btn-group>
+      <div class="toolbar-group">
+        <button
+          v-for="btn in insertButtons"
+          :key="btn.icon"
+          class="toolbar-btn"
+          :class="{ 'toolbar-btn--active': btn.isActive?.() }"
+          :title="btn.title"
+          @click="btn.action"
+        >
+          <v-icon size="18">{{ btn.icon }}</v-icon>
+        </button>
+      </div>
 
-      <v-divider vertical class="mx-1" />
+      <div class="toolbar-divider" />
 
-      <v-btn-group variant="text" density="compact">
-        <v-btn
-          icon="mdi-code-tags"
-          size="x-small"
-          :color="editor.isActive('code') ? 'primary' : undefined"
-          @click="editor.chain().focus().toggleCode().run()"
-        />
-        <v-btn
-          icon="mdi-xml"
-          size="x-small"
-          :color="editor.isActive('codeBlock') ? 'primary' : undefined"
-          @click="editor.chain().focus().toggleCodeBlock().run()"
-        />
-        <v-btn
-          icon="mdi-minus"
-          size="x-small"
-          @click="editor.chain().focus().setHorizontalRule().run()"
-        />
-      </v-btn-group>
+      <div class="toolbar-group">
+        <button
+          v-for="btn in codeButtons"
+          :key="btn.icon"
+          class="toolbar-btn"
+          :class="{ 'toolbar-btn--active': btn.isActive?.() }"
+          :title="btn.title"
+          @click="btn.action"
+        >
+          <v-icon size="18">{{ btn.icon }}</v-icon>
+        </button>
+      </div>
     </div>
 
     <EditorContent :editor="editor" class="rich-editor__content" />
@@ -167,6 +135,35 @@ const editor = useEditor({
   },
 })
 
+const textFormatButtons = computed(() => editor.value ? [
+  { icon: 'mdi-format-bold', title: 'Bold', isActive: () => editor.value!.isActive('bold'), action: () => editor.value!.chain().focus().toggleBold().run() },
+  { icon: 'mdi-format-italic', title: 'Italic', isActive: () => editor.value!.isActive('italic'), action: () => editor.value!.chain().focus().toggleItalic().run() },
+  { icon: 'mdi-format-underline', title: 'Underline', isActive: () => editor.value!.isActive('underline'), action: () => editor.value!.chain().focus().toggleUnderline().run() },
+  { icon: 'mdi-format-strikethrough', title: 'Strikethrough', isActive: () => editor.value!.isActive('strike'), action: () => editor.value!.chain().focus().toggleStrike().run() },
+] : [])
+
+const listButtons = computed(() => editor.value ? [
+  { icon: 'mdi-format-list-bulleted', title: 'Bullet list', isActive: () => editor.value!.isActive('bulletList'), action: () => editor.value!.chain().focus().toggleBulletList().run() },
+  { icon: 'mdi-format-list-numbered', title: 'Numbered list', isActive: () => editor.value!.isActive('orderedList'), action: () => editor.value!.chain().focus().toggleOrderedList().run() },
+  { icon: 'mdi-format-quote-close', title: 'Blockquote', isActive: () => editor.value!.isActive('blockquote'), action: () => editor.value!.chain().focus().toggleBlockquote().run() },
+] : [])
+
+const headingButtons = computed(() => editor.value ? [
+  { icon: 'mdi-format-header-1', title: 'Heading 1', isActive: () => editor.value!.isActive('heading', { level: 2 }), action: () => editor.value!.chain().focus().toggleHeading({ level: 2 }).run() },
+  { icon: 'mdi-format-header-2', title: 'Heading 2', isActive: () => editor.value!.isActive('heading', { level: 3 }), action: () => editor.value!.chain().focus().toggleHeading({ level: 3 }).run() },
+] : [])
+
+const insertButtons = computed(() => editor.value ? [
+  { icon: 'mdi-link', title: 'Link', isActive: () => editor.value!.isActive('link'), action: () => setLink() },
+  { icon: 'mdi-image-plus', title: 'Image', isActive: () => false, action: () => addImage() },
+] : [])
+
+const codeButtons = computed(() => editor.value ? [
+  { icon: 'mdi-code-tags', title: 'Inline code', isActive: () => editor.value!.isActive('code'), action: () => editor.value!.chain().focus().toggleCode().run() },
+  { icon: 'mdi-xml', title: 'Code block', isActive: () => editor.value!.isActive('codeBlock'), action: () => editor.value!.chain().focus().toggleCodeBlock().run() },
+  { icon: 'mdi-minus', title: 'Horizontal rule', isActive: () => false, action: () => editor.value!.chain().focus().setHorizontalRule().run() },
+] : [])
+
 watch(() => props.modelValue, (val) => {
   if (editor.value && val !== editor.value.getHTML()) {
     editor.value.commands.setContent(val, false)
@@ -214,8 +211,8 @@ function addImage() {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    gap: 2px;
-    padding: 6px 8px;
+    gap: 4px;
+    padding: 8px 10px;
     border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
     background: rgba(var(--v-theme-surface-variant), 0.3);
   }
@@ -312,6 +309,49 @@ function addImage() {
   &--compact .rich-editor__content .tiptap {
     min-height: 80px;
     padding: 8px 12px;
+  }
+}
+
+.toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.toolbar-divider {
+  width: 1px;
+  height: 20px;
+  margin: 0 6px;
+  background: rgba(var(--v-border-color), var(--v-border-opacity));
+  flex-shrink: 0;
+}
+
+.toolbar-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: rgba(var(--v-theme-on-surface), 0.7);
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+
+  &:hover {
+    background: rgba(var(--v-theme-on-surface), 0.08);
+    color: rgba(var(--v-theme-on-surface), 1);
+  }
+
+  &--active {
+    background: rgba(var(--v-theme-primary), 0.15);
+    color: rgb(var(--v-theme-primary));
+
+    &:hover {
+      background: rgba(var(--v-theme-primary), 0.25);
+      color: rgb(var(--v-theme-primary));
+    }
   }
 }
 </style>

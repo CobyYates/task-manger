@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="open" max-width="560">
+  <v-dialog v-model="open" max-width="560" @update:model-value="onDialogToggle">
     <template #activator="{ props: activatorProps }">
       <v-list-item
         v-bind="activatorProps"
@@ -13,7 +13,7 @@
     <v-card class="pa-5" color="surface">
       <div class="d-flex align-center justify-space-between mb-4">
         <v-card-title class="text-h6 font-weight-bold pa-0">Choose a Theme</v-card-title>
-        <v-btn icon="mdi-close" variant="text" size="small" @click="open = false" />
+        <v-btn icon="mdi-close" variant="text" size="small" @click="cancel" />
       </div>
 
       <!-- Dark Themes -->
@@ -27,8 +27,8 @@
         >
           <div
             class="theme-card"
-            :class="{ 'theme-card--active': currentThemeId === t.id }"
-            @click="selectTheme(t.id)"
+            :class="{ 'theme-card--active': previewThemeId === t.id }"
+            @click="previewTheme(t.id)"
           >
             <div
               class="theme-preview"
@@ -42,10 +42,10 @@
               </div>
             </div>
             <div class="d-flex align-center ga-2 pa-2">
-              <v-icon size="16" :color="currentThemeId === t.id ? 'primary' : undefined">{{ t.icon }}</v-icon>
+              <v-icon size="16" :color="previewThemeId === t.id ? 'primary' : undefined">{{ t.icon }}</v-icon>
               <span class="text-caption font-weight-medium">{{ t.name }}</span>
               <v-spacer />
-              <v-icon v-if="currentThemeId === t.id" size="16" color="primary">mdi-check-circle</v-icon>
+              <v-icon v-if="previewThemeId === t.id" size="16" color="primary">mdi-check-circle</v-icon>
             </div>
           </div>
         </v-col>
@@ -62,8 +62,8 @@
         >
           <div
             class="theme-card"
-            :class="{ 'theme-card--active': currentThemeId === t.id }"
-            @click="selectTheme(t.id)"
+            :class="{ 'theme-card--active': previewThemeId === t.id }"
+            @click="previewTheme(t.id)"
           >
             <div
               class="theme-preview"
@@ -77,14 +77,27 @@
               </div>
             </div>
             <div class="d-flex align-center ga-2 pa-2">
-              <v-icon size="16" :color="currentThemeId === t.id ? 'primary' : undefined">{{ t.icon }}</v-icon>
+              <v-icon size="16" :color="previewThemeId === t.id ? 'primary' : undefined">{{ t.icon }}</v-icon>
               <span class="text-caption font-weight-medium">{{ t.name }}</span>
               <v-spacer />
-              <v-icon v-if="currentThemeId === t.id" size="16" color="primary">mdi-check-circle</v-icon>
+              <v-icon v-if="previewThemeId === t.id" size="16" color="primary">mdi-check-circle</v-icon>
             </div>
           </div>
         </v-col>
       </v-row>
+
+      <!-- Actions -->
+      <div class="d-flex align-center justify-end ga-2 mt-5">
+        <v-btn variant="text" @click="cancel">Cancel</v-btn>
+        <v-btn
+          color="primary"
+          :disabled="previewThemeId === savedThemeId"
+          :loading="saving"
+          @click="save"
+        >
+          Save
+        </v-btn>
+      </div>
     </v-card>
   </v-dialog>
 </template>
@@ -97,13 +110,41 @@ const theme = useTheme()
 const { currentThemeId, saveTheme } = useThemeStore()
 
 const open = ref(false)
+const saving = ref(false)
+const previewThemeId = ref(currentThemeId.value)
+const savedThemeId = ref(currentThemeId.value)
 
 const darkThemes = themeOptions.filter((t) => t.dark)
 const lightThemes = themeOptions.filter((t) => !t.dark)
 
-function selectTheme(id: string) {
+function onDialogToggle(isOpen: boolean) {
+  if (isOpen) {
+    savedThemeId.value = currentThemeId.value
+    previewThemeId.value = currentThemeId.value
+  }
+}
+
+function previewTheme(id: string) {
+  previewThemeId.value = id
   theme.change(id)
-  saveTheme(id)
+}
+
+async function save() {
+  saving.value = true
+  try {
+    await saveTheme(previewThemeId.value)
+    savedThemeId.value = previewThemeId.value
+    open.value = false
+  } finally {
+    saving.value = false
+  }
+}
+
+function cancel() {
+  // Revert to the saved theme
+  theme.change(savedThemeId.value)
+  previewThemeId.value = savedThemeId.value
+  open.value = false
 }
 </script>
 

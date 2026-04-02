@@ -50,12 +50,10 @@
       <!-- Quick Add Note -->
       <v-card color="surface" class="pa-4 mb-4">
         <v-form @submit.prevent="handleAddNote">
-          <v-textarea
+          <RichTextEditor
             v-model="newNote"
             placeholder="Add a note, update, insight, or decision..."
-            rows="2"
-            auto-grow
-            hide-details
+            compact
             class="mb-3"
           />
           <div class="d-flex align-center ga-2">
@@ -66,7 +64,7 @@
               </v-chip>
             </v-chip-group>
             <v-spacer />
-            <v-btn type="submit" color="primary" size="small" :disabled="!newNote.trim()">
+            <v-btn type="submit" color="primary" size="small" :disabled="isNoteEmpty(newNote)">
               <v-icon start>mdi-plus</v-icon> Add
             </v-btn>
           </div>
@@ -109,13 +107,13 @@
               </v-menu>
             </div>
             <div v-if="editingNoteId === note.id">
-              <v-textarea v-model="editingNoteContent" rows="2" auto-grow hide-details class="mb-2" />
+              <RichTextEditor v-model="editingNoteContent" compact class="mb-2" />
               <div class="d-flex ga-2 justify-end">
                 <v-btn size="small" variant="text" @click="editingNoteId = null">Cancel</v-btn>
                 <v-btn size="small" color="primary" @click="saveEditNote(note.id)">Save</v-btn>
               </div>
             </div>
-            <p v-else class="text-body-2 whitespace-pre-wrap">{{ note.content }}</p>
+            <div v-else class="rich-content text-body-2" v-html="note.content" />
             <v-icon v-if="note.pinned" size="14" color="primary" class="mt-2">mdi-pin</v-icon>
           </v-card>
         </TransitionGroup>
@@ -189,14 +187,16 @@
               </template>
               <v-list-item-title class="font-weight-medium d-flex align-center ga-2">
                 {{ task.title }}
-                <v-btn
+                <v-chip
                   v-if="task.description"
-                  :icon="expandedTask === task.id ? 'mdi-chevron-up' : 'mdi-text-box-outline'"
-                  variant="text"
                   size="x-small"
-                  density="compact"
+                  variant="tonal"
+                  :prepend-icon="expandedTask === task.id ? 'mdi-chevron-up' : 'mdi-text-box-outline'"
+                  class="cursor-pointer"
                   @click.stop="expandedTask = expandedTask === task.id ? null : task.id"
-                />
+                >
+                  {{ expandedTask === task.id ? 'Hide' : 'Details' }}
+                </v-chip>
               </v-list-item-title>
               <v-list-item-subtitle>
                 <v-chip size="x-small" :color="getPriorityColor(task.priority)" variant="tonal" class="mr-1">
@@ -208,22 +208,33 @@
                 <span class="text-medium-emphasis ml-1">· {{ formatDateTime(task.createdAt) }}</span>
               </v-list-item-subtitle>
               <template #append>
-                <v-btn-group variant="text" density="compact">
+                <div class="d-flex ga-1">
                   <v-btn
-                    icon="mdi-pencil"
+                    icon="mdi-pencil-outline"
                     size="x-small"
+                    variant="tonal"
+                    color="primary"
                     title="Edit"
                     @click="openEditTask(task)"
                   />
                   <v-btn
                     v-if="task.status === 'todo'"
-                    icon="mdi-play"
+                    icon="mdi-play-circle-outline"
                     size="x-small"
+                    variant="tonal"
+                    color="info"
                     title="Start"
                     @click="startTask(task)"
                   />
-                  <v-btn icon="mdi-delete" size="x-small" @click="handleDeleteTask(task.id)" />
-                </v-btn-group>
+                  <v-btn
+                    icon="mdi-delete-outline"
+                    size="x-small"
+                    variant="tonal"
+                    color="error"
+                    title="Delete"
+                    @click="handleDeleteTask(task.id)"
+                  />
+                </div>
               </template>
             </v-list-item>
             <v-expand-transition>
@@ -258,7 +269,14 @@
                 Completed {{ formatDateTime(task.completedAt!) }}
               </v-list-item-subtitle>
               <template #append>
-                <v-btn icon="mdi-delete" variant="text" size="x-small" @click="handleDeleteTask(task.id)" />
+                <v-btn
+                  icon="mdi-delete-outline"
+                  size="x-small"
+                  variant="tonal"
+                  color="error"
+                  title="Delete"
+                  @click="handleDeleteTask(task.id)"
+                />
               </template>
             </v-list-item>
             <v-divider />
@@ -341,9 +359,14 @@ const sortedNotes = computed(() => {
   return [...pinned, ...unpinned]
 })
 
+function isNoteEmpty(html: string) {
+  const text = html.replace(/<[^>]*>/g, '').trim()
+  return text.length === 0
+}
+
 async function handleAddNote() {
-  if (!newNote.value.trim()) return
-  await addNote({ content: newNote.value.trim(), type: newNoteType.value })
+  if (isNoteEmpty(newNote.value)) return
+  await addNote({ content: newNote.value, type: newNoteType.value })
   newNote.value = ''
 }
 
@@ -487,7 +510,4 @@ onMounted(() => {
 })
 </script>
 
-<style scoped>
-.whitespace-pre-wrap { white-space: pre-wrap; }
-</style>
 

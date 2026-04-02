@@ -58,14 +58,16 @@
               :class="{ 'text-decoration-line-through text-medium-emphasis': task.status === 'done' }"
             >
               {{ task.title }}
-              <v-btn
+              <v-chip
                 v-if="task.description"
-                :icon="expandedTask === task.id ? 'mdi-chevron-up' : 'mdi-text-box-outline'"
-                variant="text"
                 size="x-small"
-                density="compact"
+                variant="tonal"
+                :prepend-icon="expandedTask === task.id ? 'mdi-chevron-up' : 'mdi-text-box-outline'"
+                class="cursor-pointer"
                 @click.prevent.stop="expandedTask = expandedTask === task.id ? null : task.id"
-              />
+              >
+                {{ expandedTask === task.id ? 'Hide' : 'Details' }}
+              </v-chip>
             </v-list-item-title>
             <v-list-item-subtitle>
               <v-chip size="x-small" :color="getPriorityColor(task.priority)" variant="tonal" class="mr-2">
@@ -77,10 +79,24 @@
               <span class="text-medium-emphasis">{{ formatDate(task.createdAt) }}</span>
             </v-list-item-subtitle>
             <template #append>
-              <v-btn-group variant="text" density="compact">
-                <v-btn icon="mdi-pencil" size="x-small" @click.prevent.stop="openEdit(task)" />
-                <v-btn icon="mdi-delete" size="x-small" @click.prevent.stop="handleDelete(task.id)" />
-              </v-btn-group>
+              <div class="d-flex ga-1">
+                <v-btn
+                  icon="mdi-pencil-outline"
+                  size="x-small"
+                  variant="tonal"
+                  color="primary"
+                  title="Edit"
+                  @click.prevent.stop="openEdit(task)"
+                />
+                <v-btn
+                  icon="mdi-delete-outline"
+                  size="x-small"
+                  variant="tonal"
+                  color="error"
+                  title="Delete"
+                  @click.prevent.stop="handleDelete(task.id)"
+                />
+              </div>
             </template>
           </v-list-item>
           <v-expand-transition>
@@ -142,9 +158,11 @@ definePageMeta({})
 const { projects, subscribe: subProjects } = useProjects()
 const { tasks, openTasks, completedTasks, subscribe: subTasks, addTask, updateTask, deleteTask } = useTasks()
 
+const route = useRoute()
+
 const search = ref('')
 const filterProject = ref<string | null>(null)
-const filterPriority = ref<string | null>(null)
+const filterPriority = ref<string | null>(route.query.priority === 'urgent' ? 'urgent' : null)
 const statusFilter = ref('open')
 const showAddTask = ref(false)
 const taskForm = ref({ title: '', projectId: '', priority: 'medium' as string, description: '' })

@@ -29,7 +29,7 @@
     <!-- Stats Row -->
     <v-row class="mb-6">
       <v-col cols="12" sm="6" md="3">
-        <v-card color="surface" class="pa-4">
+        <v-card color="surface" class="pa-4 stat-card" @click="navigateTo('/projects')">
           <div class="d-flex align-center">
             <v-avatar color="primary" variant="tonal" size="48" rounded="lg" class="mr-4">
               <v-icon>mdi-folder-multiple</v-icon>
@@ -42,7 +42,7 @@
         </v-card>
       </v-col>
       <v-col cols="12" sm="6" md="3">
-        <v-card color="surface" class="pa-4">
+        <v-card color="surface" class="pa-4 stat-card" @click="navigateTo('/tasks')">
           <div class="d-flex align-center">
             <v-avatar color="warning" variant="tonal" size="48" rounded="lg" class="mr-4">
               <v-icon>mdi-alert-circle</v-icon>
@@ -55,7 +55,7 @@
         </v-card>
       </v-col>
       <v-col cols="12" sm="6" md="3">
-        <v-card color="surface" class="pa-4">
+        <v-card color="surface" class="pa-4 stat-card" @click="navigateTo('/tasks?priority=urgent')">
           <div class="d-flex align-center">
             <v-avatar color="error" variant="tonal" size="48" rounded="lg" class="mr-4">
               <v-icon>mdi-fire</v-icon>
@@ -68,7 +68,7 @@
         </v-card>
       </v-col>
       <v-col cols="12" sm="6" md="3">
-        <v-card color="surface" class="pa-4">
+        <v-card color="surface" class="pa-4 stat-card" @click="navigateTo('/daily')">
           <div class="d-flex align-center">
             <v-avatar color="success" variant="tonal" size="48" rounded="lg" class="mr-4">
               <v-icon>mdi-check-circle</v-icon>
@@ -252,5 +252,13 @@ onMounted(() => {
 }
 .cursor-pointer {
   cursor: pointer;
+}
+.stat-card {
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
 }
 </style>

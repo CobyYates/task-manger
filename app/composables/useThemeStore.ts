@@ -1,4 +1,4 @@
-import { doc, getDoc, setDoc } from 'firebase/firestore'
+import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore'
 
 const STORAGE_KEY = 'tm-theme'
 const DEFAULT_THEME = 'midnight'
@@ -8,7 +8,7 @@ const currentThemeId = ref<string>(
 )
 
 let firestoreLoaded = false
-let firestoreFailed = false
+let firestoreReadFailed = false
 
 export function useThemeStore() {
   const { db } = useFirebase()
@@ -22,40 +22,62 @@ export function useThemeStore() {
   }
 
   async function loadFromFirestore() {
-    if (!currentUser.value || firestoreLoaded || firestoreFailed) return
+    if (!currentUser.value || firestoreLoaded || firestoreReadFailed) return
     try {
       const snap = await getDoc(doc(db, 'userSettings', currentUser.value.uid))
       firestoreLoaded = true
       if (snap.exists() && snap.data().theme) {
         applyTheme(snap.data().theme)
+      } else {
+        // No saved theme for this user — reset to default
+        applyTheme(DEFAULT_THEME)
       }
-    } catch {
-      // Firestore rules likely not configured for userSettings — fall back to localStorage silently
-      firestoreFailed = true
+    } catch (e) {
+      console.warn('Failed to load theme from Firestore:', e)
+      firestoreReadFailed = true
     }
   }
 
   async function saveTheme(themeId: string) {
     applyTheme(themeId)
-    if (!currentUser.value || firestoreFailed) return
+    if (!currentUser.value) return
     try {
-      await setDoc(
-        doc(db, 'userSettings', currentUser.value.uid),
-        { theme: themeId },
-        { merge: true }
-      )
-    } catch {
-      // Firestore save failed — theme still persists via localStorage
-      firestoreFailed = true
+      const user = currentUser.value
+      const settingsRef = doc(db, 'userSettings', user.uid)
+
+      // Always use merge: true — creates the doc if it doesn't exist,
+      // updates it if it does. No need to read first.
+      await setDoc(settingsRef, {
+        userId: user.uid,
+        email: user.email || '',
+        displayName: user.displayName || '',
+        photoURL: user.photoURL || '',
+        theme: themeId,
+        updatedAt: serverTimestamp(),
+      }, { merge: true })
+    } catch (e) {
+      console.error('Failed to save theme to Firestore:', e)
     }
   }
 
-  // Load from Firestore once when user logs in
-  watch(currentUser, (user) => {
+  function clearTheme() {
+    currentThemeId.value = DEFAULT_THEME
+    if (import.meta.client) {
+      localStorage.removeItem(STORAGE_KEY)
+    }
+    firestoreLoaded = false
+    firestoreReadFailed = false
+  }
+
+  // Load from Firestore when user logs in, clear when they log out
+  watch(currentUser, (user, oldUser) => {
     if (user) {
       firestoreLoaded = false
-      firestoreFailed = false
+      firestoreReadFailed = false
       loadFromFirestore()
+    } else if (oldUser) {
+      // User logged out — clear the previous user's theme
+      clearTheme()
     }
   }, { immediate: true })
 
@@ -63,5 +85,6 @@ export function useThemeStore() {
     currentThemeId: readonly(currentThemeId),
     saveTheme,
     loadFromFirestore,
+    clearTheme,
   }
 }
