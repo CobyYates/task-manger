@@ -5,6 +5,7 @@
         <button
           v-for="btn in textFormatButtons"
           :key="btn.icon"
+          type="button"
           class="toolbar-btn"
           :class="{ 'toolbar-btn--active': btn.isActive() }"
           :title="btn.title"
@@ -20,6 +21,7 @@
         <button
           v-for="btn in listButtons"
           :key="btn.icon"
+          type="button"
           class="toolbar-btn"
           :class="{ 'toolbar-btn--active': btn.isActive() }"
           :title="btn.title"
@@ -35,6 +37,7 @@
         <button
           v-for="btn in headingButtons"
           :key="btn.icon"
+          type="button"
           class="toolbar-btn"
           :class="{ 'toolbar-btn--active': btn.isActive() }"
           :title="btn.title"
@@ -50,6 +53,7 @@
         <button
           v-for="btn in insertButtons"
           :key="btn.icon"
+          type="button"
           class="toolbar-btn"
           :class="{ 'toolbar-btn--active': btn.isActive?.() }"
           :title="btn.title"
@@ -65,6 +69,7 @@
         <button
           v-for="btn in codeButtons"
           :key="btn.icon"
+          type="button"
           class="toolbar-btn"
           :class="{ 'toolbar-btn--active': btn.isActive?.() }"
           :title="btn.title"
